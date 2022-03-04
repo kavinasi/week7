@@ -14,11 +14,13 @@ pipeline {
                     sh "./gradlew test"
                }
           }
+          if(env.BRANCH_NAME == 'main') {
           stage("Code coverage") {
                steps {
                     sh "./gradlew jacocoTestReport"
                     sh "./gradlew jacocoTestCoverageVerification"
                }
+          }
           }
           stage("Static code analysis") {
                steps {
