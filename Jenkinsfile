@@ -15,11 +15,10 @@ pipeline {
                }
           }
           stage("Code coverage") {
-             if(env.BRANCH_NAME == 'main') {
+               when { branch "main" }
                steps {
                     sh "./gradlew jacocoTestReport"
                     sh "./gradlew jacocoTestCoverageVerification"
-               }
                }
           }
           stage("Static code analysis") {
