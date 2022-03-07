@@ -19,6 +19,8 @@ podTemplate(yaml: '''
         args:
         - 9999999
         volumeMounts:
+        - name: shared-storage
+          mountPath: /mnt
         - name: kaniko-secret
           mountPath: /kaniko/.docker
       restartPolicy: Never
