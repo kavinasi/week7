@@ -36,7 +36,7 @@ podTemplate(yaml: '''
               path: config.json
 ''') {
   node(POD_LABEL) {
-    withEnv(['value=World']) {
+    withEnv(['container=docker']) {
     stage('Build a gradle project') {
       git 'https://github.com/karthikkrish84/week7.git'
       container('gradle') {
