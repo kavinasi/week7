@@ -41,7 +41,7 @@ podTemplate(yaml: '''
       git 'https://github.com/karthikkrish84/week7.git'
       container('gradle') {
         stage('Build a gradle project') {
-          echo "value Value ${env.value}"
+          echo "container Value ${env.container}"
           sh '''
                     pwd
                     chmod +x gradlew
