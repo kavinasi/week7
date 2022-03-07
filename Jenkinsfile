@@ -11,7 +11,7 @@ podTemplate(yaml: '''
         - 99d
         volumeMounts:
         - name: shared-storage
-          mountPath: /mnt
+          mountPath: /mnt        
       - name: kaniko
         image: gcr.io/kaniko-project/executor:debug
         command:
@@ -36,76 +36,35 @@ podTemplate(yaml: '''
               path: config.json
 ''') {
   node(POD_LABEL) {
-    stage('Run pipeline against a gradle project') {
-        git branch: 'master', url: 'https://github.com/karthikkrish84/week7'
-        container('gradle') {
-            try {
-                stage('Build a gradle project!') {
-                    sh '''
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew build
-                    mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
-                    '''
-                    }
-
-                stage("Code coverage!") {
-                    if (env.BRANCH_NAME == "master") {
-                        sh '''
-                            pwd
-                            ./gradlew jacocoTestReport
-                            ./gradlew jacocoTestCoverageVerification
-                        '''
-                    publishHTML (target: [
-                        reportDir: 'build/reports/jacoco/test/html',
-                        reportFiles: 'index.html',
-                        reportName: "JaCoCo Report"
-                    ])
-                    }
-                }
-
-                stage("Static code analysis!") {
-                    if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "feature") {
-                        sh '''
-                        pwd
-                        ./gradlew checkstyleMain
-                        '''
-                        publishHTML (target: [
-                            reportDir: 'build/reports/checkstyle/',
-                            reportFiles: 'main.html',
-                            reportName: "Checkstyle Report"
-                        ])
-                    }
-                }
-            } catch (Exception E) {
-                echo 'Failed'
-            }
-        }
-    }
-
-    stage('Build Java Image') {
-      if (env.BRANCH_NAME != "playground") {
-        container('kaniko') {
-          stage('Build a container') {
-            img_version = ""
-            if (env.BRANCH_NAME == "master") {
-              img_version = ":1.0"
-            }
-
-            if (env.BRANCH_NAME == "feature") {
-              img_version = "-feature:0.1"
-            }
-            sh '''
-            echo 'FROM openjdk:8-jre' > Dockerfile
-            echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
-            echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
-            ls /mnt/*jar
-            mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
-            '''
-            sh "/kaniko/executor --context `pwd` --destination karthikkrish84/calculator${img_version}"
-          }
+    stage('Build a gradle project') {
+      git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+      container('gradle') {
+        stage('Build a gradle project') {
+          sh '''
+          cd /home/jenkins/agent/workspace/week7/Chapter08/sample1
+          sed -i '4 a /** Main app */' /home/jenkins/agent/workspace/week7/Chapter08/sample1/src/main/java/com/leszko/calculator/Calculator.java
+          chmod +x gradlew
+          ./gradlew build
+          mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
+          '''
         }
       }
     }
+
+    stage('Build Java Image') {
+      container('kaniko') {
+        stage('Build a container') {
+          sh '''
+          echo 'FROM openjdk:8-jre' > Dockerfile
+          echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+          echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+          ls /mnt/*jar
+          mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+          /kaniko/executor --context `pwd` --destination dlambrig/hello-kaniko:1.0
+          '''
+        }
+      }
+    }
+
   }
 }
