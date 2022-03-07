@@ -11,7 +11,7 @@ podTemplate(yaml: '''
         - 99d
         volumeMounts:
         - name: shared-storage
-          mountPath: /mnt        
+          mountPath: /mnt
       - name: kaniko
         image: gcr.io/kaniko-project/executor:debug
         command:
@@ -19,8 +19,6 @@ podTemplate(yaml: '''
         args:
         - 9999999
         volumeMounts:
-        - name: shared-storage
-          mountPath: /mnt
         - name: kaniko-secret
           mountPath: /kaniko/.docker
       restartPolicy: Never
@@ -52,14 +50,14 @@ podTemplate(yaml: '''
 
     stage('Build Java Image') {
       container('kaniko') {
-        stage('Build a container') {
+        stage('Build a Go project') {
           sh '''
-          echo 'FROM openjdk:8-jre' > Dockerfile
-          echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
-          echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
-          ls /mnt/*jar
-          mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
-          /kaniko/executor --context `pwd` --destination karthikkrish84/hello-kaniko:1.0
+            echo 'FROM openjdk:8-jre' > Dockerfile
+            echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+            echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+            ls /mnt/*jar
+            mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+            /kaniko/executor --context `pwd` --destination karthikkrish84/hello-kaniko:1.0
           '''
         }
       }
