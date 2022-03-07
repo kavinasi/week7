@@ -36,15 +36,12 @@ podTemplate(yaml: '''
               path: config.json
 ''') {
   node(POD_LABEL) {
-    agent any
-    environment {
-        TEST='myvalue'
-    }
+    withEnv(['value=World']) {
     stage('Build a gradle project') {
       git 'https://github.com/karthikkrish84/week7.git'
       container('gradle') {
         stage('Build a gradle project') {
-          echo "TEST Value ${env.TEST}"
+          echo "value Value ${env.value}"
           sh '''
                     pwd
                     chmod +x gradlew
@@ -69,6 +66,6 @@ podTemplate(yaml: '''
         }
       }
     }
-
+    }
   }
 }
