@@ -41,12 +41,11 @@ podTemplate(yaml: '''
       container('gradle') {
         stage('Build a gradle project') {
           sh '''
-          cd /home/jenkins/agent/workspace/week7/Chapter08/sample1
-          sed -i '4 a /** Main app */' /home/jenkins/agent/workspace/week7/Chapter08/sample1/src/main/java/com/leszko/calculator/Calculator.java
-          chmod +x gradlew
-          ./gradlew build
-          mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
-          '''
+                    pwd
+                    chmod +x gradlew
+                    ./gradlew build
+                    mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
+                    '''
         }
       }
     }
