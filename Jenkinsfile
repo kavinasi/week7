@@ -85,15 +85,13 @@ podTemplate(yaml: '''
             }
         }
     }
-    stage('Build Java Image') {
-      if (env.BRANCH_NAME != "playground") {
+    if (env.BRANCH_NAME != "playground") {
+      stage('Build Java Image') {
         container('kaniko') {
           stage('Build a container') {
-            image_version = ""
             if (env.BRANCH_NAME == "master") {
               image_version = ":1.0"
             }
-
             if (env.BRANCH_NAME == "feature") {
               image_version = "-feature:0.1"
             }
