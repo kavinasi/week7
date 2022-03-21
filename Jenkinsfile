@@ -40,14 +40,13 @@ podTemplate(yaml: '''
         git branch: 'master', url: 'https://github.com/karthikkrish84/week7'
         container('gradle') {
             try {
+              if(env.BRANCH_NAME != "playground") {
                 stage("Unit test") {
-                  if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "feature") {
                   sh '''
                   ./gradlew test
                   '''
-                  }
                 }
-                if (env.BRANCH_NAME == "master") {
+                if (env.BRANCH_NAME != "feature") {
                 stage("Code coverage!") {
                         sh '''
                             pwd
@@ -60,9 +59,8 @@ podTemplate(yaml: '''
                         reportName: "JaCoCo Report"
                     ])
                     }
-                }
+                  }
                 stage("Static code analysis!") {
-                    if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "feature") {
                         sh '''
                         pwd
                         ./gradlew checkstyleMain
@@ -73,7 +71,7 @@ podTemplate(yaml: '''
                             reportName: "Checkstyle Report"
                         ])
                     }
-                }
+              }
                 stage('Build a gradle project!') {
                     sh '''
                     pwd
@@ -91,13 +89,13 @@ podTemplate(yaml: '''
       if (env.BRANCH_NAME != "playground") {
         container('kaniko') {
           stage('Build a container') {
-            img_version = ""
+            image_version = ""
             if (env.BRANCH_NAME == "master") {
-              img_version = ":1.0"
+              image_version = ":1.0"
             }
 
             if (env.BRANCH_NAME == "feature") {
-              img_version = "-feature:0.1"
+              image_version = "-feature:0.1"
             }
             sh '''
             echo 'FROM openjdk:8-jre' > Dockerfile
@@ -106,7 +104,7 @@ podTemplate(yaml: '''
             ls /mnt/*jar
             mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
             '''
-            sh "/kaniko/executor --context `pwd` --destination karthikkrish84/calculator${img_version}"
+            sh "/kaniko/executor --context `pwd` --destination karthikkrish84/calculator${image_version}"
           }
         }
       }
