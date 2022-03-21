@@ -4,7 +4,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 /**
- * Main Spring Application. Commit 2
+ * Main Spring Application. Commit 3
  */
 @Service
 public class Calculator {
