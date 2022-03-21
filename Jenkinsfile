@@ -40,26 +40,20 @@ podTemplate(yaml: '''
         git branch: 'master', url: 'https://github.com/karthikkrish84/week7'
         container('gradle') {
             try {
-                stage('Build a gradle project!') {
-                    echo "I am the ${env.BRANCH_NAME} branch"
-                    sh '''
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew build
-                    mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
-                    '''
-                    }
-
+                stage("Unit test") {
+                  if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "feature") {
+                  sh '''
+                  ./gradlew test
+                  '''
+                  }
+                }
                 stage("Code coverage!") {
-                    echo "CC is for Master branch; this is ${env.BRANCH_NAME}"
                     if (env.BRANCH_NAME == "master") {
                         sh '''
                             pwd
                             ./gradlew jacocoTestReport
                             ./gradlew jacocoTestCoverageVerification
                         '''
-
-
                     publishHTML (target: [
                         reportDir: 'build/reports/jacoco/test/html',
                         reportFiles: 'index.html',
@@ -67,9 +61,7 @@ podTemplate(yaml: '''
                     ])
                     }
                 }
-
                 stage("Static code analysis!") {
-                    echo "going to test statically now"
                     if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "feature") {
                         sh '''
                         pwd
@@ -82,12 +74,19 @@ podTemplate(yaml: '''
                         ])
                     }
                 }
+                stage('Build a gradle project!') {
+                    sh '''
+                    pwd
+                    chmod +x gradlew
+                    ./gradlew build
+                    mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
+                    '''
+                    }
             } catch (Exception E) {
                 echo 'Failure detected'
             }
         }
     }
-
     stage('Build Java Image') {
       if (env.BRANCH_NAME != "playground") {
         container('kaniko') {
@@ -100,7 +99,6 @@ podTemplate(yaml: '''
             if (env.BRANCH_NAME == "feature") {
               img_version = "-feature:0.1"
             }
-            echo "This version is: ${img_version}"
             sh '''
             echo 'FROM openjdk:8-jre' > Dockerfile
             echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
