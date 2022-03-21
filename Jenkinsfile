@@ -47,8 +47,8 @@ podTemplate(yaml: '''
                   '''
                   }
                 }
+                if (env.BRANCH_NAME == "master") {
                 stage("Code coverage!") {
-                    if (env.BRANCH_NAME == "master") {
                         sh '''
                             pwd
                             ./gradlew jacocoTestReport
